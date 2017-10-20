@@ -1,7 +1,5 @@
 import utils
 
-# list = list(input("Introduzca una lista de numeros: "))
-list = [12, 18, 20, 24, 30, 36, 6, 153, 14, 199, 251, 83, 28, 496, 8128]
 
 def process_numbers(num_list):
     perfect_num_list = []
@@ -22,6 +20,28 @@ def process_numbers(num_list):
     print defective_num_list
     print ("Abundant num list")
     print abundant_num_list
-    print ("He terminado de procesar la lista de numeros")
+    print ("--------------------")
+    print ("Finish process data")
+    print ("--------------------")
 
-process_numbers(list)
+def check_number(num):
+
+    if utils.is_perfect(num):
+        print ("Is a perfect number")
+    if utils.is_defective(num):
+        print ("Is a defective number")
+    if utils.is_abundant(num):
+        print ("Is a abundant number")
+
+# data = input("Introduzca una lista de numeros: ")
+data = [12, 18, 20, 24, 30, 36, 6, 153, 14, 199, 251, 83, 28, 496, 8128]
+
+if isinstance(data, int):
+    check_number(data)
+    exit()
+
+if not isinstance(data, (list, tuple)):
+    print ("Wrong input data, is not a list int numbers")
+    exit()
+
+process_numbers(data)
