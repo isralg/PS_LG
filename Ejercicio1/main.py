@@ -35,8 +35,10 @@ def check_number(num):
 
 # --------- OPTION 1 --------- #
 data = [12, 18, 20, 24, 30, 36, 6, 153, 14, 199, 251, 83, 28, 496, 8128]
+
 # --------- OPTION 2 --------- #
 # data = input("Introduzca una lista de numeros: ")
+
 # --------- OPTION 3 --------- #
 # start = input("Introduce un numero para iniciar rango: ")
 # if not isinstance(start, int):
