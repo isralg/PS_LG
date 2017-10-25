@@ -205,7 +205,9 @@
         function calculate_percentage_by_cat() {
             for (i in group_cats) {
                 if (group_cats.hasOwnProperty(i)) {
-                    percent_cats[i] = (group_cats[i] * 100) / total_value_cats;
+                    r = (group_cats[i] * 100) / total_value_cats;
+                    r = Number(r.toFixed(2));
+                    percent_cats[i] = r;
                 }
             }
         }
