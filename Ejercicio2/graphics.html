@@ -183,10 +183,18 @@
         // Function to prepare highcart data //
         // --------------------------------- //
         function prepared_highchart_data() {
-            for(i in percent_cats) {
-                if (percent_cats.hasOwnProperty(i)) {
-                    record = [i, percent_cats[i]];
-                    prepared_data.push(record);
+            for(i in cats) {
+                if (cats.hasOwnProperty(i)) {
+                    key = cats[i];
+                    var record_values = [];
+                    for (j in dates) {
+                        if (dates.hasOwnProperty(j)) {
+                            value = data_serie_1_normalized[dates[j]][cats[i]] + data_serie_2_normalized[dates[j]][cats[i]] + data_serie_3_normalized[dates[j]][cats[i]];
+                            record_values.push(value);
+                        }
+                    }
+                    obj = {name: key, data: record_values};
+                    prepared_data.push(obj);
                 }
             }
         }
@@ -197,8 +205,8 @@
         var categories_x = [];
         var cats = [];
         var dates = [];
+        var prepared_data = [];
         var chart;
-        var chart_2;
 
         $(document).ready(function() {
             var data_serie_1 = $.ajax({
@@ -236,6 +244,7 @@
 
             complete_series();
             order_dates();
+            prepared_highchart_data();
 
             chart = new Highcharts.Chart({
                 chart: {
@@ -259,7 +268,7 @@
                 },
                 // Format tooltip to show on mouseover for graphic
                 tooltip: {
-                    enabled: true,
+                    enabled: false,
                     formatter: function() {
                         return '<b>'+ this.series.name +'</b><br/>'+
                             this.x +': '+ this.y +' '+this.series.name;
@@ -275,255 +284,7 @@
                     }
                 },
                 // Data for paint the graphic
-                series: [{
-                            name: 'CAT 1',
-                            data: [data_serie_1_normalized['2015-06-01']['CAT 1'] + data_serie_2_normalized['2015-06-01']['CAT 1'] + data_serie_3_normalized['2015-06-01']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-02']['CAT 1'] + data_serie_2_normalized['2015-06-02']['CAT 1'] + data_serie_3_normalized['2015-06-02']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-03']['CAT 1'] + data_serie_2_normalized['2015-06-03']['CAT 1'] + data_serie_3_normalized['2015-06-03']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-04']['CAT 1'] + data_serie_2_normalized['2015-06-04']['CAT 1'] + data_serie_3_normalized['2015-06-04']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-05']['CAT 1'] + data_serie_2_normalized['2015-06-05']['CAT 1'] + data_serie_3_normalized['2015-06-05']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-06']['CAT 1'] + data_serie_2_normalized['2015-06-06']['CAT 1'] + data_serie_3_normalized['2015-06-06']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-07']['CAT 1'] + data_serie_2_normalized['2015-06-07']['CAT 1'] + data_serie_3_normalized['2015-06-07']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-08']['CAT 1'] + data_serie_2_normalized['2015-06-08']['CAT 1'] + data_serie_3_normalized['2015-06-08']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-09']['CAT 1'] + data_serie_2_normalized['2015-06-09']['CAT 1'] + data_serie_3_normalized['2015-06-09']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-10']['CAT 1'] + data_serie_2_normalized['2015-06-10']['CAT 1'] + data_serie_3_normalized['2015-06-10']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-11']['CAT 1'] + data_serie_2_normalized['2015-06-11']['CAT 1'] + data_serie_3_normalized['2015-06-11']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-12']['CAT 1'] + data_serie_2_normalized['2015-06-12']['CAT 1'] + data_serie_3_normalized['2015-06-12']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-13']['CAT 1'] + data_serie_2_normalized['2015-06-13']['CAT 1'] + data_serie_3_normalized['2015-06-13']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-14']['CAT 1'] + data_serie_2_normalized['2015-06-14']['CAT 1'] + data_serie_3_normalized['2015-06-14']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-15']['CAT 1'] + data_serie_2_normalized['2015-06-15']['CAT 1'] + data_serie_3_normalized['2015-06-15']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-16']['CAT 1'] + data_serie_2_normalized['2015-06-16']['CAT 1'] + data_serie_3_normalized['2015-06-16']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-17']['CAT 1'] + data_serie_2_normalized['2015-06-17']['CAT 1'] + data_serie_3_normalized['2015-06-17']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-18']['CAT 1'] + data_serie_2_normalized['2015-06-18']['CAT 1'] + data_serie_3_normalized['2015-06-18']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-19']['CAT 1'] + data_serie_2_normalized['2015-06-19']['CAT 1'] + data_serie_3_normalized['2015-06-19']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-20']['CAT 1'] + data_serie_2_normalized['2015-06-20']['CAT 1'] + data_serie_3_normalized['2015-06-20']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-21']['CAT 1'] + data_serie_2_normalized['2015-06-21']['CAT 1'] + data_serie_3_normalized['2015-06-21']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-22']['CAT 1'] + data_serie_2_normalized['2015-06-22']['CAT 1'] + data_serie_3_normalized['2015-06-22']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-23']['CAT 1'] + data_serie_2_normalized['2015-06-23']['CAT 1'] + data_serie_3_normalized['2015-06-23']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-24']['CAT 1'] + data_serie_2_normalized['2015-06-24']['CAT 1'] + data_serie_3_normalized['2015-06-24']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-25']['CAT 1'] + data_serie_2_normalized['2015-06-25']['CAT 1'] + data_serie_3_normalized['2015-06-25']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-26']['CAT 1'] + data_serie_2_normalized['2015-06-26']['CAT 1'] + data_serie_3_normalized['2015-06-26']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-27']['CAT 1'] + data_serie_2_normalized['2015-06-27']['CAT 1'] + data_serie_3_normalized['2015-06-27']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-28']['CAT 1'] + data_serie_2_normalized['2015-06-28']['CAT 1'] + data_serie_3_normalized['2015-06-28']['CAT 1'],
-                                    data_serie_1_normalized['2015-06-29']['CAT 1'] + data_serie_2_normalized['2015-06-29']['CAT 1'] + data_serie_3_normalized['2015-06-29']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-01']['CAT 1'] + data_serie_2_normalized['2015-07-01']['CAT 1'] + data_serie_3_normalized['2015-07-01']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-02']['CAT 1'] + data_serie_2_normalized['2015-07-02']['CAT 1'] + data_serie_3_normalized['2015-07-02']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-03']['CAT 1'] + data_serie_2_normalized['2015-07-03']['CAT 1'] + data_serie_3_normalized['2015-07-03']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-04']['CAT 1'] + data_serie_2_normalized['2015-07-04']['CAT 1'] + data_serie_3_normalized['2015-07-04']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-05']['CAT 1'] + data_serie_2_normalized['2015-07-05']['CAT 1'] + data_serie_3_normalized['2015-07-05']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-06']['CAT 1'] + data_serie_2_normalized['2015-07-06']['CAT 1'] + data_serie_3_normalized['2015-07-06']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-07']['CAT 1'] + data_serie_2_normalized['2015-07-07']['CAT 1'] + data_serie_3_normalized['2015-07-07']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-08']['CAT 1'] + data_serie_2_normalized['2015-07-08']['CAT 1'] + data_serie_3_normalized['2015-07-08']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-09']['CAT 1'] + data_serie_2_normalized['2015-07-09']['CAT 1'] + data_serie_3_normalized['2015-07-09']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-10']['CAT 1'] + data_serie_2_normalized['2015-07-10']['CAT 1'] + data_serie_3_normalized['2015-07-10']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-11']['CAT 1'] + data_serie_2_normalized['2015-07-11']['CAT 1'] + data_serie_3_normalized['2015-07-11']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-12']['CAT 1'] + data_serie_2_normalized['2015-07-12']['CAT 1'] + data_serie_3_normalized['2015-07-12']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-13']['CAT 1'] + data_serie_2_normalized['2015-07-13']['CAT 1'] + data_serie_3_normalized['2015-07-13']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-14']['CAT 1'] + data_serie_2_normalized['2015-07-14']['CAT 1'] + data_serie_3_normalized['2015-07-14']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-15']['CAT 1'] + data_serie_2_normalized['2015-07-15']['CAT 1'] + data_serie_3_normalized['2015-07-15']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-16']['CAT 1'] + data_serie_2_normalized['2015-07-16']['CAT 1'] + data_serie_3_normalized['2015-07-16']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-17']['CAT 1'] + data_serie_2_normalized['2015-07-17']['CAT 1'] + data_serie_3_normalized['2015-07-17']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-18']['CAT 1'] + data_serie_2_normalized['2015-07-18']['CAT 1'] + data_serie_3_normalized['2015-07-18']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-19']['CAT 1'] + data_serie_2_normalized['2015-07-19']['CAT 1'] + data_serie_3_normalized['2015-07-19']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-20']['CAT 1'] + data_serie_2_normalized['2015-07-20']['CAT 1'] + data_serie_3_normalized['2015-07-20']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-21']['CAT 1'] + data_serie_2_normalized['2015-07-21']['CAT 1'] + data_serie_3_normalized['2015-07-21']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-22']['CAT 1'] + data_serie_2_normalized['2015-07-22']['CAT 1'] + data_serie_3_normalized['2015-07-22']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-23']['CAT 1'] + data_serie_2_normalized['2015-07-23']['CAT 1'] + data_serie_3_normalized['2015-07-23']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-24']['CAT 1'] + data_serie_2_normalized['2015-07-24']['CAT 1'] + data_serie_3_normalized['2015-07-24']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-25']['CAT 1'] + data_serie_2_normalized['2015-07-25']['CAT 1'] + data_serie_3_normalized['2015-07-25']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-26']['CAT 1'] + data_serie_2_normalized['2015-07-26']['CAT 1'] + data_serie_3_normalized['2015-07-26']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-27']['CAT 1'] + data_serie_2_normalized['2015-07-27']['CAT 1'] + data_serie_3_normalized['2015-07-27']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-28']['CAT 1'] + data_serie_2_normalized['2015-07-28']['CAT 1'] + data_serie_3_normalized['2015-07-28']['CAT 1'],
-                                    data_serie_1_normalized['2015-07-29']['CAT 1'] + data_serie_2_normalized['2015-07-29']['CAT 1'] + data_serie_3_normalized['2015-07-29']['CAT 1']
-                            ]
-                        },
-                        {
-                            name: 'CAT 2',
-                            data: [data_serie_1_normalized['2015-06-01']['CAT 2'] + data_serie_2_normalized['2015-06-01']['CAT 2'] + data_serie_3_normalized['2015-06-01']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-02']['CAT 2'] + data_serie_2_normalized['2015-06-02']['CAT 2'] + data_serie_3_normalized['2015-06-02']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-03']['CAT 2'] + data_serie_2_normalized['2015-06-03']['CAT 2'] + data_serie_3_normalized['2015-06-03']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-04']['CAT 2'] + data_serie_2_normalized['2015-06-04']['CAT 2'] + data_serie_3_normalized['2015-06-04']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-05']['CAT 2'] + data_serie_2_normalized['2015-06-05']['CAT 2'] + data_serie_3_normalized['2015-06-05']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-06']['CAT 2'] + data_serie_2_normalized['2015-06-06']['CAT 2'] + data_serie_3_normalized['2015-06-06']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-07']['CAT 2'] + data_serie_2_normalized['2015-06-07']['CAT 2'] + data_serie_3_normalized['2015-06-07']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-08']['CAT 2'] + data_serie_2_normalized['2015-06-08']['CAT 2'] + data_serie_3_normalized['2015-06-08']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-09']['CAT 2'] + data_serie_2_normalized['2015-06-09']['CAT 2'] + data_serie_3_normalized['2015-06-09']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-10']['CAT 2'] + data_serie_2_normalized['2015-06-10']['CAT 2'] + data_serie_3_normalized['2015-06-10']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-11']['CAT 2'] + data_serie_2_normalized['2015-06-11']['CAT 2'] + data_serie_3_normalized['2015-06-11']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-12']['CAT 2'] + data_serie_2_normalized['2015-06-12']['CAT 2'] + data_serie_3_normalized['2015-06-12']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-13']['CAT 2'] + data_serie_2_normalized['2015-06-13']['CAT 2'] + data_serie_3_normalized['2015-06-13']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-14']['CAT 2'] + data_serie_2_normalized['2015-06-14']['CAT 2'] + data_serie_3_normalized['2015-06-14']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-15']['CAT 2'] + data_serie_2_normalized['2015-06-15']['CAT 2'] + data_serie_3_normalized['2015-06-15']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-16']['CAT 2'] + data_serie_2_normalized['2015-06-16']['CAT 2'] + data_serie_3_normalized['2015-06-16']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-17']['CAT 2'] + data_serie_2_normalized['2015-06-17']['CAT 2'] + data_serie_3_normalized['2015-06-17']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-18']['CAT 2'] + data_serie_2_normalized['2015-06-18']['CAT 2'] + data_serie_3_normalized['2015-06-18']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-19']['CAT 2'] + data_serie_2_normalized['2015-06-19']['CAT 2'] + data_serie_3_normalized['2015-06-19']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-20']['CAT 2'] + data_serie_2_normalized['2015-06-20']['CAT 2'] + data_serie_3_normalized['2015-06-20']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-21']['CAT 2'] + data_serie_2_normalized['2015-06-21']['CAT 2'] + data_serie_3_normalized['2015-06-21']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-22']['CAT 2'] + data_serie_2_normalized['2015-06-22']['CAT 2'] + data_serie_3_normalized['2015-06-22']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-23']['CAT 2'] + data_serie_2_normalized['2015-06-23']['CAT 2'] + data_serie_3_normalized['2015-06-23']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-24']['CAT 2'] + data_serie_2_normalized['2015-06-24']['CAT 2'] + data_serie_3_normalized['2015-06-24']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-25']['CAT 2'] + data_serie_2_normalized['2015-06-25']['CAT 2'] + data_serie_3_normalized['2015-06-25']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-26']['CAT 2'] + data_serie_2_normalized['2015-06-26']['CAT 2'] + data_serie_3_normalized['2015-06-26']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-27']['CAT 2'] + data_serie_2_normalized['2015-06-27']['CAT 2'] + data_serie_3_normalized['2015-06-27']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-28']['CAT 2'] + data_serie_2_normalized['2015-06-28']['CAT 2'] + data_serie_3_normalized['2015-06-28']['CAT 2'],
-                                    data_serie_1_normalized['2015-06-29']['CAT 2'] + data_serie_2_normalized['2015-06-29']['CAT 2'] + data_serie_3_normalized['2015-06-29']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-01']['CAT 2'] + data_serie_2_normalized['2015-07-01']['CAT 2'] + data_serie_3_normalized['2015-07-01']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-02']['CAT 2'] + data_serie_2_normalized['2015-07-02']['CAT 2'] + data_serie_3_normalized['2015-07-02']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-03']['CAT 2'] + data_serie_2_normalized['2015-07-03']['CAT 2'] + data_serie_3_normalized['2015-07-03']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-04']['CAT 2'] + data_serie_2_normalized['2015-07-04']['CAT 2'] + data_serie_3_normalized['2015-07-04']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-05']['CAT 2'] + data_serie_2_normalized['2015-07-05']['CAT 2'] + data_serie_3_normalized['2015-07-05']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-06']['CAT 2'] + data_serie_2_normalized['2015-07-06']['CAT 2'] + data_serie_3_normalized['2015-07-06']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-07']['CAT 2'] + data_serie_2_normalized['2015-07-07']['CAT 2'] + data_serie_3_normalized['2015-07-07']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-08']['CAT 2'] + data_serie_2_normalized['2015-07-08']['CAT 2'] + data_serie_3_normalized['2015-07-08']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-09']['CAT 2'] + data_serie_2_normalized['2015-07-09']['CAT 2'] + data_serie_3_normalized['2015-07-09']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-10']['CAT 2'] + data_serie_2_normalized['2015-07-10']['CAT 2'] + data_serie_3_normalized['2015-07-10']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-11']['CAT 2'] + data_serie_2_normalized['2015-07-11']['CAT 2'] + data_serie_3_normalized['2015-07-11']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-12']['CAT 2'] + data_serie_2_normalized['2015-07-12']['CAT 2'] + data_serie_3_normalized['2015-07-12']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-13']['CAT 2'] + data_serie_2_normalized['2015-07-13']['CAT 2'] + data_serie_3_normalized['2015-07-13']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-14']['CAT 2'] + data_serie_2_normalized['2015-07-14']['CAT 2'] + data_serie_3_normalized['2015-07-14']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-15']['CAT 2'] + data_serie_2_normalized['2015-07-15']['CAT 2'] + data_serie_3_normalized['2015-07-15']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-16']['CAT 2'] + data_serie_2_normalized['2015-07-16']['CAT 2'] + data_serie_3_normalized['2015-07-16']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-17']['CAT 2'] + data_serie_2_normalized['2015-07-17']['CAT 2'] + data_serie_3_normalized['2015-07-17']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-18']['CAT 2'] + data_serie_2_normalized['2015-07-18']['CAT 2'] + data_serie_3_normalized['2015-07-18']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-19']['CAT 2'] + data_serie_2_normalized['2015-07-19']['CAT 2'] + data_serie_3_normalized['2015-07-19']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-20']['CAT 2'] + data_serie_2_normalized['2015-07-20']['CAT 2'] + data_serie_3_normalized['2015-07-20']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-21']['CAT 2'] + data_serie_2_normalized['2015-07-21']['CAT 2'] + data_serie_3_normalized['2015-07-21']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-22']['CAT 2'] + data_serie_2_normalized['2015-07-22']['CAT 2'] + data_serie_3_normalized['2015-07-22']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-23']['CAT 2'] + data_serie_2_normalized['2015-07-23']['CAT 2'] + data_serie_3_normalized['2015-07-23']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-24']['CAT 2'] + data_serie_2_normalized['2015-07-24']['CAT 2'] + data_serie_3_normalized['2015-07-24']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-25']['CAT 2'] + data_serie_2_normalized['2015-07-25']['CAT 2'] + data_serie_3_normalized['2015-07-25']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-26']['CAT 2'] + data_serie_2_normalized['2015-07-26']['CAT 2'] + data_serie_3_normalized['2015-07-26']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-27']['CAT 2'] + data_serie_2_normalized['2015-07-27']['CAT 2'] + data_serie_3_normalized['2015-07-27']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-28']['CAT 2'] + data_serie_2_normalized['2015-07-28']['CAT 2'] + data_serie_3_normalized['2015-07-28']['CAT 2'],
-                                    data_serie_1_normalized['2015-07-29']['CAT 2'] + data_serie_2_normalized['2015-07-29']['CAT 2'] + data_serie_3_normalized['2015-07-29']['CAT 2']
-                            ]
-                        },
-                        {
-                            name: 'CAT 3',
-                            data: [data_serie_1_normalized['2015-06-01']['CAT 3'] + data_serie_2_normalized['2015-06-01']['CAT 3'] + data_serie_3_normalized['2015-06-01']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-02']['CAT 3'] + data_serie_2_normalized['2015-06-02']['CAT 3'] + data_serie_3_normalized['2015-06-02']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-03']['CAT 3'] + data_serie_2_normalized['2015-06-03']['CAT 3'] + data_serie_3_normalized['2015-06-03']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-04']['CAT 3'] + data_serie_2_normalized['2015-06-04']['CAT 3'] + data_serie_3_normalized['2015-06-04']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-05']['CAT 3'] + data_serie_2_normalized['2015-06-05']['CAT 3'] + data_serie_3_normalized['2015-06-05']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-06']['CAT 3'] + data_serie_2_normalized['2015-06-06']['CAT 3'] + data_serie_3_normalized['2015-06-06']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-07']['CAT 3'] + data_serie_2_normalized['2015-06-07']['CAT 3'] + data_serie_3_normalized['2015-06-07']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-08']['CAT 3'] + data_serie_2_normalized['2015-06-08']['CAT 3'] + data_serie_3_normalized['2015-06-08']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-09']['CAT 3'] + data_serie_2_normalized['2015-06-09']['CAT 3'] + data_serie_3_normalized['2015-06-09']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-10']['CAT 3'] + data_serie_2_normalized['2015-06-10']['CAT 3'] + data_serie_3_normalized['2015-06-10']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-11']['CAT 3'] + data_serie_2_normalized['2015-06-11']['CAT 3'] + data_serie_3_normalized['2015-06-11']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-12']['CAT 3'] + data_serie_2_normalized['2015-06-12']['CAT 3'] + data_serie_3_normalized['2015-06-12']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-13']['CAT 3'] + data_serie_2_normalized['2015-06-13']['CAT 3'] + data_serie_3_normalized['2015-06-13']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-14']['CAT 3'] + data_serie_2_normalized['2015-06-14']['CAT 3'] + data_serie_3_normalized['2015-06-14']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-15']['CAT 3'] + data_serie_2_normalized['2015-06-15']['CAT 3'] + data_serie_3_normalized['2015-06-15']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-16']['CAT 3'] + data_serie_2_normalized['2015-06-16']['CAT 3'] + data_serie_3_normalized['2015-06-16']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-17']['CAT 3'] + data_serie_2_normalized['2015-06-17']['CAT 3'] + data_serie_3_normalized['2015-06-17']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-18']['CAT 3'] + data_serie_2_normalized['2015-06-18']['CAT 3'] + data_serie_3_normalized['2015-06-18']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-19']['CAT 3'] + data_serie_2_normalized['2015-06-19']['CAT 3'] + data_serie_3_normalized['2015-06-19']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-20']['CAT 3'] + data_serie_2_normalized['2015-06-20']['CAT 3'] + data_serie_3_normalized['2015-06-20']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-21']['CAT 3'] + data_serie_2_normalized['2015-06-21']['CAT 3'] + data_serie_3_normalized['2015-06-21']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-22']['CAT 3'] + data_serie_2_normalized['2015-06-22']['CAT 3'] + data_serie_3_normalized['2015-06-22']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-23']['CAT 3'] + data_serie_2_normalized['2015-06-23']['CAT 3'] + data_serie_3_normalized['2015-06-23']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-24']['CAT 3'] + data_serie_2_normalized['2015-06-24']['CAT 3'] + data_serie_3_normalized['2015-06-24']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-25']['CAT 3'] + data_serie_2_normalized['2015-06-25']['CAT 3'] + data_serie_3_normalized['2015-06-25']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-26']['CAT 3'] + data_serie_2_normalized['2015-06-26']['CAT 3'] + data_serie_3_normalized['2015-06-26']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-27']['CAT 3'] + data_serie_2_normalized['2015-06-27']['CAT 3'] + data_serie_3_normalized['2015-06-27']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-28']['CAT 3'] + data_serie_2_normalized['2015-06-28']['CAT 3'] + data_serie_3_normalized['2015-06-28']['CAT 3'],
-                                    data_serie_1_normalized['2015-06-29']['CAT 3'] + data_serie_2_normalized['2015-06-29']['CAT 3'] + data_serie_3_normalized['2015-06-29']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-01']['CAT 3'] + data_serie_2_normalized['2015-07-01']['CAT 3'] + data_serie_3_normalized['2015-07-01']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-02']['CAT 3'] + data_serie_2_normalized['2015-07-02']['CAT 3'] + data_serie_3_normalized['2015-07-02']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-03']['CAT 3'] + data_serie_2_normalized['2015-07-03']['CAT 3'] + data_serie_3_normalized['2015-07-03']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-04']['CAT 3'] + data_serie_2_normalized['2015-07-04']['CAT 3'] + data_serie_3_normalized['2015-07-04']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-05']['CAT 3'] + data_serie_2_normalized['2015-07-05']['CAT 3'] + data_serie_3_normalized['2015-07-05']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-06']['CAT 3'] + data_serie_2_normalized['2015-07-06']['CAT 3'] + data_serie_3_normalized['2015-07-06']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-07']['CAT 3'] + data_serie_2_normalized['2015-07-07']['CAT 3'] + data_serie_3_normalized['2015-07-07']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-08']['CAT 3'] + data_serie_2_normalized['2015-07-08']['CAT 3'] + data_serie_3_normalized['2015-07-08']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-09']['CAT 3'] + data_serie_2_normalized['2015-07-09']['CAT 3'] + data_serie_3_normalized['2015-07-09']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-10']['CAT 3'] + data_serie_2_normalized['2015-07-10']['CAT 3'] + data_serie_3_normalized['2015-07-10']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-11']['CAT 3'] + data_serie_2_normalized['2015-07-11']['CAT 3'] + data_serie_3_normalized['2015-07-11']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-12']['CAT 3'] + data_serie_2_normalized['2015-07-12']['CAT 3'] + data_serie_3_normalized['2015-07-12']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-13']['CAT 3'] + data_serie_2_normalized['2015-07-13']['CAT 3'] + data_serie_3_normalized['2015-07-13']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-14']['CAT 3'] + data_serie_2_normalized['2015-07-14']['CAT 3'] + data_serie_3_normalized['2015-07-14']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-15']['CAT 3'] + data_serie_2_normalized['2015-07-15']['CAT 3'] + data_serie_3_normalized['2015-07-15']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-16']['CAT 3'] + data_serie_2_normalized['2015-07-16']['CAT 3'] + data_serie_3_normalized['2015-07-16']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-17']['CAT 3'] + data_serie_2_normalized['2015-07-17']['CAT 3'] + data_serie_3_normalized['2015-07-17']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-18']['CAT 3'] + data_serie_2_normalized['2015-07-18']['CAT 3'] + data_serie_3_normalized['2015-07-18']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-19']['CAT 3'] + data_serie_2_normalized['2015-07-19']['CAT 3'] + data_serie_3_normalized['2015-07-19']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-20']['CAT 3'] + data_serie_2_normalized['2015-07-20']['CAT 3'] + data_serie_3_normalized['2015-07-20']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-21']['CAT 3'] + data_serie_2_normalized['2015-07-21']['CAT 3'] + data_serie_3_normalized['2015-07-21']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-22']['CAT 3'] + data_serie_2_normalized['2015-07-22']['CAT 3'] + data_serie_3_normalized['2015-07-22']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-23']['CAT 3'] + data_serie_2_normalized['2015-07-23']['CAT 3'] + data_serie_3_normalized['2015-07-23']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-24']['CAT 3'] + data_serie_2_normalized['2015-07-24']['CAT 3'] + data_serie_3_normalized['2015-07-24']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-25']['CAT 3'] + data_serie_2_normalized['2015-07-25']['CAT 3'] + data_serie_3_normalized['2015-07-25']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-26']['CAT 3'] + data_serie_2_normalized['2015-07-26']['CAT 3'] + data_serie_3_normalized['2015-07-26']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-27']['CAT 3'] + data_serie_2_normalized['2015-07-27']['CAT 3'] + data_serie_3_normalized['2015-07-27']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-28']['CAT 3'] + data_serie_2_normalized['2015-07-28']['CAT 3'] + data_serie_3_normalized['2015-07-28']['CAT 3'],
-                                    data_serie_1_normalized['2015-07-29']['CAT 3'] + data_serie_2_normalized['2015-07-29']['CAT 3'] + data_serie_3_normalized['2015-07-29']['CAT 3']
-                            ]
-                        },
-                        {
-                            name: 'CAT 4',
-                            data: [data_serie_1_normalized['2015-06-01']['CAT 4'] + data_serie_2_normalized['2015-06-01']['CAT 4'] + data_serie_3_normalized['2015-06-01']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-02']['CAT 4'] + data_serie_2_normalized['2015-06-02']['CAT 4'] + data_serie_3_normalized['2015-06-02']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-03']['CAT 4'] + data_serie_2_normalized['2015-06-03']['CAT 4'] + data_serie_3_normalized['2015-06-03']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-04']['CAT 4'] + data_serie_2_normalized['2015-06-04']['CAT 4'] + data_serie_3_normalized['2015-06-04']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-05']['CAT 4'] + data_serie_2_normalized['2015-06-05']['CAT 4'] + data_serie_3_normalized['2015-06-05']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-06']['CAT 4'] + data_serie_2_normalized['2015-06-06']['CAT 4'] + data_serie_3_normalized['2015-06-06']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-07']['CAT 4'] + data_serie_2_normalized['2015-06-07']['CAT 4'] + data_serie_3_normalized['2015-06-07']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-08']['CAT 4'] + data_serie_2_normalized['2015-06-08']['CAT 4'] + data_serie_3_normalized['2015-06-08']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-09']['CAT 4'] + data_serie_2_normalized['2015-06-09']['CAT 4'] + data_serie_3_normalized['2015-06-09']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-10']['CAT 4'] + data_serie_2_normalized['2015-06-10']['CAT 4'] + data_serie_3_normalized['2015-06-10']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-11']['CAT 4'] + data_serie_2_normalized['2015-06-11']['CAT 4'] + data_serie_3_normalized['2015-06-11']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-12']['CAT 4'] + data_serie_2_normalized['2015-06-12']['CAT 4'] + data_serie_3_normalized['2015-06-12']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-13']['CAT 4'] + data_serie_2_normalized['2015-06-13']['CAT 4'] + data_serie_3_normalized['2015-06-13']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-14']['CAT 4'] + data_serie_2_normalized['2015-06-14']['CAT 4'] + data_serie_3_normalized['2015-06-14']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-15']['CAT 4'] + data_serie_2_normalized['2015-06-15']['CAT 4'] + data_serie_3_normalized['2015-06-15']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-16']['CAT 4'] + data_serie_2_normalized['2015-06-16']['CAT 4'] + data_serie_3_normalized['2015-06-16']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-17']['CAT 4'] + data_serie_2_normalized['2015-06-17']['CAT 4'] + data_serie_3_normalized['2015-06-17']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-18']['CAT 4'] + data_serie_2_normalized['2015-06-18']['CAT 4'] + data_serie_3_normalized['2015-06-18']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-19']['CAT 4'] + data_serie_2_normalized['2015-06-19']['CAT 4'] + data_serie_3_normalized['2015-06-19']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-20']['CAT 4'] + data_serie_2_normalized['2015-06-20']['CAT 4'] + data_serie_3_normalized['2015-06-20']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-21']['CAT 4'] + data_serie_2_normalized['2015-06-21']['CAT 4'] + data_serie_3_normalized['2015-06-21']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-22']['CAT 4'] + data_serie_2_normalized['2015-06-22']['CAT 4'] + data_serie_3_normalized['2015-06-22']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-23']['CAT 4'] + data_serie_2_normalized['2015-06-23']['CAT 4'] + data_serie_3_normalized['2015-06-23']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-24']['CAT 4'] + data_serie_2_normalized['2015-06-24']['CAT 4'] + data_serie_3_normalized['2015-06-24']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-25']['CAT 4'] + data_serie_2_normalized['2015-06-25']['CAT 4'] + data_serie_3_normalized['2015-06-25']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-26']['CAT 4'] + data_serie_2_normalized['2015-06-26']['CAT 4'] + data_serie_3_normalized['2015-06-26']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-27']['CAT 4'] + data_serie_2_normalized['2015-06-27']['CAT 4'] + data_serie_3_normalized['2015-06-27']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-28']['CAT 4'] + data_serie_2_normalized['2015-06-28']['CAT 4'] + data_serie_3_normalized['2015-06-28']['CAT 4'],
-                                    data_serie_1_normalized['2015-06-29']['CAT 4'] + data_serie_2_normalized['2015-06-29']['CAT 4'] + data_serie_3_normalized['2015-06-29']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-01']['CAT 4'] + data_serie_2_normalized['2015-07-01']['CAT 4'] + data_serie_3_normalized['2015-07-01']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-02']['CAT 4'] + data_serie_2_normalized['2015-07-02']['CAT 4'] + data_serie_3_normalized['2015-07-02']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-03']['CAT 4'] + data_serie_2_normalized['2015-07-03']['CAT 4'] + data_serie_3_normalized['2015-07-03']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-04']['CAT 4'] + data_serie_2_normalized['2015-07-04']['CAT 4'] + data_serie_3_normalized['2015-07-04']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-05']['CAT 4'] + data_serie_2_normalized['2015-07-05']['CAT 4'] + data_serie_3_normalized['2015-07-05']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-06']['CAT 4'] + data_serie_2_normalized['2015-07-06']['CAT 4'] + data_serie_3_normalized['2015-07-06']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-07']['CAT 4'] + data_serie_2_normalized['2015-07-07']['CAT 4'] + data_serie_3_normalized['2015-07-07']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-08']['CAT 4'] + data_serie_2_normalized['2015-07-08']['CAT 4'] + data_serie_3_normalized['2015-07-08']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-09']['CAT 4'] + data_serie_2_normalized['2015-07-09']['CAT 4'] + data_serie_3_normalized['2015-07-09']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-10']['CAT 4'] + data_serie_2_normalized['2015-07-10']['CAT 4'] + data_serie_3_normalized['2015-07-10']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-11']['CAT 4'] + data_serie_2_normalized['2015-07-11']['CAT 4'] + data_serie_3_normalized['2015-07-11']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-12']['CAT 4'] + data_serie_2_normalized['2015-07-12']['CAT 4'] + data_serie_3_normalized['2015-07-12']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-13']['CAT 4'] + data_serie_2_normalized['2015-07-13']['CAT 4'] + data_serie_3_normalized['2015-07-13']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-14']['CAT 4'] + data_serie_2_normalized['2015-07-14']['CAT 4'] + data_serie_3_normalized['2015-07-14']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-15']['CAT 4'] + data_serie_2_normalized['2015-07-15']['CAT 4'] + data_serie_3_normalized['2015-07-15']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-16']['CAT 4'] + data_serie_2_normalized['2015-07-16']['CAT 4'] + data_serie_3_normalized['2015-07-16']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-17']['CAT 4'] + data_serie_2_normalized['2015-07-17']['CAT 4'] + data_serie_3_normalized['2015-07-17']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-18']['CAT 4'] + data_serie_2_normalized['2015-07-18']['CAT 4'] + data_serie_3_normalized['2015-07-18']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-19']['CAT 4'] + data_serie_2_normalized['2015-07-19']['CAT 4'] + data_serie_3_normalized['2015-07-19']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-20']['CAT 4'] + data_serie_2_normalized['2015-07-20']['CAT 4'] + data_serie_3_normalized['2015-07-20']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-21']['CAT 4'] + data_serie_2_normalized['2015-07-21']['CAT 4'] + data_serie_3_normalized['2015-07-21']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-22']['CAT 4'] + data_serie_2_normalized['2015-07-22']['CAT 4'] + data_serie_3_normalized['2015-07-22']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-23']['CAT 4'] + data_serie_2_normalized['2015-07-23']['CAT 4'] + data_serie_3_normalized['2015-07-23']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-24']['CAT 4'] + data_serie_2_normalized['2015-07-24']['CAT 4'] + data_serie_3_normalized['2015-07-24']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-25']['CAT 4'] + data_serie_2_normalized['2015-07-25']['CAT 4'] + data_serie_3_normalized['2015-07-25']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-26']['CAT 4'] + data_serie_2_normalized['2015-07-26']['CAT 4'] + data_serie_3_normalized['2015-07-26']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-27']['CAT 4'] + data_serie_2_normalized['2015-07-27']['CAT 4'] + data_serie_3_normalized['2015-07-27']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-28']['CAT 4'] + data_serie_2_normalized['2015-07-28']['CAT 4'] + data_serie_3_normalized['2015-07-28']['CAT 4'],
-                                    data_serie_1_normalized['2015-07-29']['CAT 4'] + data_serie_2_normalized['2015-07-29']['CAT 4'] + data_serie_3_normalized['2015-07-29']['CAT 4']
-                            ]
-                        }
-                    ]
+                series: prepared_data
             });
         });
         </script>
