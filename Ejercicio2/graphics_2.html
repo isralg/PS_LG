@@ -1,0 +1,322 @@
+<!DOCTYPE HTML>
+    <html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Highcharts Pie Chart</title>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script src="script.js"></script>
+        <script type="text/javascript">
+        //---------------------------//
+        // Function to convert dates //
+        //---------------------------//
+        function convert_date(miliseconds) {
+            var date = new Date(miliseconds);
+            var year = date.getFullYear();
+            var month = ("0" + (date.getMonth() + 1)).slice(-2);
+            var day = ("0" + date.getDate()).slice(-2);
+
+            return [year, month, day].join("-");
+        }
+
+        //----------------------------//
+        // Functions to validate date //
+        //----------------------------//
+        function is_valid_date(dateString) {
+          var regEx = /^\d{4}-\d{2}-\d{2}$/;
+          if(!dateString.match(regEx)) return false;  // Invalid format
+          var d = new Date(dateString);
+          if(!d.getTime()) return false; // Invalid date (or this could be epoch)
+          return d.toISOString().slice(0,10) === dateString;
+        }
+
+        //------------------------------------------------//
+        // Function to normalizer json series data type 1 //
+        //------------------------------------------------//
+        function normalizer_serie_data_1(serie, data) {
+            if (!Array.isArray(serie[convert_date(data.d).toString()])) {
+                serie[convert_date(data.d).toString()] = [];
+                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] = data.value;
+            }
+            else if (serie[convert_date(data.d).toString()].indexOf(data.cat.toUpperCase()) == -1) {
+                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] = data.value;
+            } else {
+                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] += data.value;
+            }
+
+            if (cats.indexOf(data.cat.toUpperCase()) == -1) {
+                cats.push(data.cat.toUpperCase());
+            }
+            if (dates.indexOf(convert_date(data.d).toString()) == -1) {
+                dates.push(convert_date(data.d).toString());
+            }
+        }
+
+        //------------------------------------------------//
+        // Function to normalizer json series data type 2 //
+        //------------------------------------------------//
+        function normalizer_serie_data_2(serie, data) {
+            if (!Array.isArray(serie[data.myDate.toString()])) {
+                serie[data.myDate.toString()] = [];
+                serie[data.myDate.toString()][data.categ.toUpperCase()] = data.val;
+            }
+            else if (serie[data.myDate.toString()].indexOf(data.categ.toUpperCase()) == -1) {
+                serie[data.myDate.toString()][data.categ.toUpperCase()] = data.val;
+            } else {
+                serie[data.myDate.toString()][data.categ.toUpperCase()] += data.val;
+            }
+
+            if (cats.indexOf(data.categ.toUpperCase()) == -1) {
+                cats.push(data.categ.toUpperCase());
+            }
+            if (dates.indexOf(data.myDate.toString()) == -1) {
+                dates.push(data.myDate.toString());
+            }
+        }
+
+        //------------------------------------------------//
+        // Function to normalizer json series data type 3 //
+        //------------------------------------------------//
+        function normalizer_serie_data_3(serie, data) {
+            var info_cat = data.raw.split("#");
+            var cat = info_cat[1].trim();
+            var record = data.raw.split(" ");
+            var date = "";
+            for (i in record) {
+                if (record.hasOwnProperty(i)) {
+                    if (is_valid_date(record[i])) {
+                        date = record[i];
+                    }
+                }
+            }
+            if (!Array.isArray(serie[date])) {
+                serie[date] = [];
+                serie[date][cat] = data.val;
+            }
+            else if (serie[date].indexOf(cat) == -1) {
+                serie[date][cat] = data.val;
+            } else {
+                serie[date][cat] += data.val;
+            }
+
+            if (cats.indexOf(cat) == -1) {
+                cats.push(cat);
+            }
+            if (dates.indexOf(date) == -1) {
+                dates.push(date);
+            }
+        }
+
+        // --------------------------------
+        // Function to order array dates //
+        // --------------------------------
+        function order_dates() {
+            dates.sort(function(a, b) {
+                a_date = new Date(a);
+                b_date = new Date(b);
+                return a_date.getTime() - b_date.getTime();
+            });
+        }
+
+        //-----------------------------//
+        // Function to complete series //
+        //-----------------------------//
+        function complete_series() {
+            for (i in dates) {
+                if (dates.hasOwnProperty(i)) {
+                    // Complete serie 1 //
+                    if (!Array.isArray(data_serie_1_normalized[dates[i]])) {
+                        data_serie_1_normalized[dates[i]] = [];
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                data_serie_1_normalized[dates[i]][cats[j]] = 0;
+                            }
+                        }
+                    } else {
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                if (typeof(data_serie_1_normalized[dates[i]][cats[j]]) == "undefined") {
+                                    data_serie_1_normalized[dates[i]][cats[j]] = 0;
+                                }
+                            }
+                        }
+                    }
+                    // Complete serie 2 //
+                    if (!Array.isArray(data_serie_2_normalized[dates[i]])) {
+                        data_serie_2_normalized[dates[i]] = [];
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                data_serie_2_normalized[dates[i]][cats[j]] = 0;
+                            }
+                        }
+                    } else {
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                if (typeof(data_serie_2_normalized[dates[i]][cats[j]]) == "undefined") {
+                                    data_serie_2_normalized[dates[i]][cats[j]] = 0;
+                                }
+                            }
+                        }
+                    }
+                    // Complete serie 3 //
+                    if (!Array.isArray(data_serie_3_normalized[dates[i]])) {
+                        data_serie_3_normalized[dates[i]] = [];
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                data_serie_3_normalized[dates[i]][cats[j]] = 0;
+                            }
+                        }
+                    } else {
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                if (typeof(data_serie_3_normalized[dates[i]][cats[j]]) == "undefined") {
+                                    data_serie_3_normalized[dates[i]][cats[j]] = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //------------------------------//
+        // Function to group categories //
+        //------------------------------//
+        function group_categories() {
+            for (i in dates) {
+                if (dates.hasOwnProperty(i)) {
+                    for(j in cats) {
+                        if (cats.hasOwnProperty(j)) {
+                            if(typeof(group_cats[cats[j]]) == "undefined") {
+                                group_cats[cats[j]] = 0;
+                            } else {
+                                group_cats[cats[j]] += data_serie_1_normalized[dates[i]][cats[j]] + data_serie_2_normalized[dates[i]][cats[j]] + data_serie_3_normalized[dates[i]][cats[j]];
+                                total_value_cats += data_serie_1_normalized[dates[i]][cats[j]] + data_serie_2_normalized[dates[i]][cats[j]] + data_serie_3_normalized[dates[i]][cats[j]];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        //-----------------------------------------------------//
+        // Function to calculate percentage foreach categories //
+        //-----------------------------------------------------//
+        function calculate_percentage_by_cat() {
+            for (i in group_cats) {
+                if (group_cats.hasOwnProperty(i)) {
+                    percent_cats[i] = (group_cats[i] * 100) / total_value_cats;
+                }
+            }
+        }
+
+        // --------------------------------- //
+        // Function to prepare highcart data //
+        // --------------------------------- //
+        function prepared_highchart_data() {
+            for(i in percent_cats) {
+                if (percent_cats.hasOwnProperty(i)) {
+                    record = [i, percent_cats[i]];
+                    prepared_data.push(record);
+                }
+            }
+            console.log("GRAPHIC 2");
+            console.log(prepared_data);
+        }
+
+        var data_serie_1_normalized = [];
+        var data_serie_2_normalized = [];
+        var data_serie_3_normalized = [];
+        var categories_x = [];
+        var cats = [];
+        var dates = [];
+        var group_cats = [];
+        var total_value_cats = 0;
+        var percent_cats = [];
+        var prepared_data = [];
+        var chart;
+
+        $(document).ready(function() {
+            var data_serie_1 = $.ajax({
+                dataType: "json",
+                url: "http://s3.amazonaws.com/logtrust-static/test/test/data1.json",
+                async: false,
+                success: function(data_serie_1) {
+                    $.each(data_serie_1, function (i, item) {
+                        normalizer_serie_data_1(data_serie_1_normalized, item)
+                    });
+                }
+            });
+
+            var data_serie_2 = $.ajax({
+                dataType: "json",
+                url: "http://s3.amazonaws.com/logtrust-static/test/test/data2.json",
+                async: false,
+                success: function(data_serie_2) {
+                    $.each(data_serie_2, function (i, item) {
+                        normalizer_serie_data_2(data_serie_2_normalized, item)
+                    });
+                }
+            });
+
+            var data_serie_3 = $.ajax({
+                dataType: "json",
+                url: "http://s3.amazonaws.com/logtrust-static/test/test/data3.json",
+                async: false,
+                success: function(data_serie_3) {
+                    $.each(data_serie_3, function (i, item) {
+                        normalizer_serie_data_3(data_serie_3_normalized, item)
+                    });
+                }
+            });
+
+            complete_series();
+            order_dates();
+            group_categories();
+            calculate_percentage_by_cat();
+            prepared_highchart_data();
+
+            chart = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'Graphic_2'
+                },
+                title: {
+                    text: 'Porcentaje por Categorias'
+                },
+                plotArea: {
+                    shadow: null,
+                    borderWidth: null,
+                    backgroundColor: null
+                },
+                tooltip: {
+                    formatter: function() {
+                        return '<b>'+ this.point.name +'</b>: '+ this.y +' %';
+                    }
+                },
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            color: '#000000',
+                            connectorColor: '#000000',
+                            formatter: function() {
+                                return '<b>'+ this.point.name +'</b>: '+ this.y +' %';
+                            }
+                        }
+                    }
+                },
+                series: [{
+                    type: 'pie',
+                    name: 'Browser share',
+                    data: prepared_data
+                }]
+            });
+        });
+        </script>
+    </head>
+    <body>
+        <div id="Graphic_2" style="width: 100%; height: 500px; margin: 0 auto"></div>
+    </body>
+</html>

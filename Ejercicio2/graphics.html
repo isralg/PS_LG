@@ -1,0 +1,534 @@
+<!DOCTYPE HTML>
+    <html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>Highcharts Pie Chart</title>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+        <script src="script.js"></script>
+        <script type="text/javascript">
+        //---------------------------//
+        // Function to convert dates //
+        //---------------------------//
+        function convert_date(miliseconds) {
+            var date = new Date(miliseconds);
+            var year = date.getFullYear();
+            var month = ("0" + (date.getMonth() + 1)).slice(-2);
+            var day = ("0" + date.getDate()).slice(-2);
+
+            return [year, month, day].join("-");
+        }
+
+        //----------------------------//
+        // Functions to validate date //
+        //----------------------------//
+        function is_valid_date(dateString) {
+          var regEx = /^\d{4}-\d{2}-\d{2}$/;
+          if(!dateString.match(regEx)) return false;  // Invalid format
+          var d = new Date(dateString);
+          if(!d.getTime()) return false; // Invalid date (or this could be epoch)
+          return d.toISOString().slice(0,10) === dateString;
+        }
+
+        //------------------------------------------------//
+        // Function to normalizer json series data type 1 //
+        //------------------------------------------------//
+        function normalizer_serie_data_1(serie, data) {
+            if (!Array.isArray(serie[convert_date(data.d).toString()])) {
+                serie[convert_date(data.d).toString()] = [];
+                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] = data.value;
+            }
+            else if (serie[convert_date(data.d).toString()].indexOf(data.cat.toUpperCase()) == -1) {
+                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] = data.value;
+            } else {
+                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] += data.value;
+            }
+
+            if (cats.indexOf(data.cat.toUpperCase()) == -1) {
+                cats.push(data.cat.toUpperCase());
+            }
+            if (dates.indexOf(convert_date(data.d).toString()) == -1) {
+                dates.push(convert_date(data.d).toString());
+            }
+        }
+
+        //------------------------------------------------//
+        // Function to normalizer json series data type 2 //
+        //------------------------------------------------//
+        function normalizer_serie_data_2(serie, data) {
+            if (!Array.isArray(serie[data.myDate.toString()])) {
+                serie[data.myDate.toString()] = [];
+                serie[data.myDate.toString()][data.categ.toUpperCase()] = data.val;
+            }
+            else if (serie[data.myDate.toString()].indexOf(data.categ.toUpperCase()) == -1) {
+                serie[data.myDate.toString()][data.categ.toUpperCase()] = data.val;
+            } else {
+                serie[data.myDate.toString()][data.categ.toUpperCase()] += data.val;
+            }
+
+            if (cats.indexOf(data.categ.toUpperCase()) == -1) {
+                cats.push(data.categ.toUpperCase());
+            }
+            if (dates.indexOf(data.myDate.toString()) == -1) {
+                dates.push(data.myDate.toString());
+            }
+        }
+
+        //------------------------------------------------//
+        // Function to normalizer json series data type 3 //
+        //------------------------------------------------//
+        function normalizer_serie_data_3(serie, data) {
+            var info_cat = data.raw.split("#");
+            var cat = info_cat[1].trim();
+            var record = data.raw.split(" ");
+            var date = "";
+            for (i in record) {
+                if (record.hasOwnProperty(i)) {
+                    if (is_valid_date(record[i])) {
+                        date = record[i];
+                    }
+                }
+            }
+            if (!Array.isArray(serie[date])) {
+                serie[date] = [];
+                serie[date][cat] = data.val;
+            }
+            else if (serie[date].indexOf(cat) == -1) {
+                serie[date][cat] = data.val;
+            } else {
+                serie[date][cat] += data.val;
+            }
+
+            if (cats.indexOf(cat) == -1) {
+                cats.push(cat);
+            }
+            if (dates.indexOf(date) == -1) {
+                dates.push(date);
+            }
+        }
+
+        // --------------------------------
+        // Function to order array dates //
+        // --------------------------------
+        function order_dates() {
+            dates.sort(function(a, b) {
+                a_date = new Date(a);
+                b_date = new Date(b);
+                return a_date.getTime() - b_date.getTime();
+            });
+        }
+
+        //-----------------------------//
+        // Function to complete series //
+        //-----------------------------//
+        function complete_series() {
+            for (i in dates) {
+                if (dates.hasOwnProperty(i)) {
+                    // Complete serie 1 //
+                    if (!Array.isArray(data_serie_1_normalized[dates[i]])) {
+                        data_serie_1_normalized[dates[i]] = [];
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                data_serie_1_normalized[dates[i]][cats[j]] = 0;
+                            }
+                        }
+                    } else {
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                if (typeof(data_serie_1_normalized[dates[i]][cats[j]]) == "undefined") {
+                                    data_serie_1_normalized[dates[i]][cats[j]] = 0;
+                                }
+                            }
+                        }
+                    }
+                    // Complete serie 2 //
+                    if (!Array.isArray(data_serie_2_normalized[dates[i]])) {
+                        data_serie_2_normalized[dates[i]] = [];
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                data_serie_2_normalized[dates[i]][cats[j]] = 0;
+                            }
+                        }
+                    } else {
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                if (typeof(data_serie_2_normalized[dates[i]][cats[j]]) == "undefined") {
+                                    data_serie_2_normalized[dates[i]][cats[j]] = 0;
+                                }
+                            }
+                        }
+                    }
+                    // Complete serie 3 //
+                    if (!Array.isArray(data_serie_3_normalized[dates[i]])) {
+                        data_serie_3_normalized[dates[i]] = [];
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                data_serie_3_normalized[dates[i]][cats[j]] = 0;
+                            }
+                        }
+                    } else {
+                        for (j in cats) {
+                            if (cats.hasOwnProperty(j)) {
+                                if (typeof(data_serie_3_normalized[dates[i]][cats[j]]) == "undefined") {
+                                    data_serie_3_normalized[dates[i]][cats[j]] = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // --------------------------------- //
+        // Function to prepare highcart data //
+        // --------------------------------- //
+        function prepared_highchart_data() {
+            for(i in percent_cats) {
+                if (percent_cats.hasOwnProperty(i)) {
+                    record = [i, percent_cats[i]];
+                    prepared_data.push(record);
+                }
+            }
+        }
+
+        var data_serie_1_normalized = [];
+        var data_serie_2_normalized = [];
+        var data_serie_3_normalized = [];
+        var categories_x = [];
+        var cats = [];
+        var dates = [];
+        var chart;
+        var chart_2;
+
+        $(document).ready(function() {
+            var data_serie_1 = $.ajax({
+                dataType: "json",
+                url: "http://s3.amazonaws.com/logtrust-static/test/test/data1.json",
+                async: false,
+                success: function(data_serie_1) {
+                    $.each(data_serie_1, function (i, item) {
+                        normalizer_serie_data_1(data_serie_1_normalized, item)
+                    });
+                }
+            });
+
+            var data_serie_2 = $.ajax({
+                dataType: "json",
+                url: "http://s3.amazonaws.com/logtrust-static/test/test/data2.json",
+                async: false,
+                success: function(data_serie_2) {
+                    $.each(data_serie_2, function (i, item) {
+                        normalizer_serie_data_2(data_serie_2_normalized, item)
+                    });
+                }
+            });
+
+            var data_serie_3 = $.ajax({
+                dataType: "json",
+                url: "http://s3.amazonaws.com/logtrust-static/test/test/data3.json",
+                async: false,
+                success: function(data_serie_3) {
+                    $.each(data_serie_3, function (i, item) {
+                        normalizer_serie_data_3(data_serie_3_normalized, item)
+                    });
+                }
+            });
+
+            complete_series();
+            order_dates();
+
+            chart = new Highcharts.Chart({
+                chart: {
+                    renderTo: 'Graphic_1',
+                    defaultSeriesType: 'line'
+                },
+                title: {
+                    text: 'Series por Categorias'
+                },
+                // Data for eje 'X'
+                xAxis: {
+                    categories: dates,
+                    title: {
+                        text: 'Fechas'
+                    }
+                },
+                yAxis: {
+                    title: {
+                        text: 'Valores'
+                    }
+                },
+                // Format tooltip to show on mouseover for graphic
+                tooltip: {
+                    enabled: true,
+                    formatter: function() {
+                        return '<b>'+ this.series.name +'</b><br/>'+
+                            this.x +': '+ this.y +' '+this.series.name;
+                    }
+                },
+                // Options to graphic
+                plotOptions: {
+                    line: {
+                        dataLabels: {
+                            enabled: true
+                        },
+                        enableMouseTracking: true
+                    }
+                },
+                // Data for paint the graphic
+                series: [{
+                            name: 'CAT 1',
+                            data: [data_serie_1_normalized['2015-06-01']['CAT 1'] + data_serie_2_normalized['2015-06-01']['CAT 1'] + data_serie_3_normalized['2015-06-01']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-02']['CAT 1'] + data_serie_2_normalized['2015-06-02']['CAT 1'] + data_serie_3_normalized['2015-06-02']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-03']['CAT 1'] + data_serie_2_normalized['2015-06-03']['CAT 1'] + data_serie_3_normalized['2015-06-03']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-04']['CAT 1'] + data_serie_2_normalized['2015-06-04']['CAT 1'] + data_serie_3_normalized['2015-06-04']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-05']['CAT 1'] + data_serie_2_normalized['2015-06-05']['CAT 1'] + data_serie_3_normalized['2015-06-05']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-06']['CAT 1'] + data_serie_2_normalized['2015-06-06']['CAT 1'] + data_serie_3_normalized['2015-06-06']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-07']['CAT 1'] + data_serie_2_normalized['2015-06-07']['CAT 1'] + data_serie_3_normalized['2015-06-07']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-08']['CAT 1'] + data_serie_2_normalized['2015-06-08']['CAT 1'] + data_serie_3_normalized['2015-06-08']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-09']['CAT 1'] + data_serie_2_normalized['2015-06-09']['CAT 1'] + data_serie_3_normalized['2015-06-09']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-10']['CAT 1'] + data_serie_2_normalized['2015-06-10']['CAT 1'] + data_serie_3_normalized['2015-06-10']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-11']['CAT 1'] + data_serie_2_normalized['2015-06-11']['CAT 1'] + data_serie_3_normalized['2015-06-11']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-12']['CAT 1'] + data_serie_2_normalized['2015-06-12']['CAT 1'] + data_serie_3_normalized['2015-06-12']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-13']['CAT 1'] + data_serie_2_normalized['2015-06-13']['CAT 1'] + data_serie_3_normalized['2015-06-13']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-14']['CAT 1'] + data_serie_2_normalized['2015-06-14']['CAT 1'] + data_serie_3_normalized['2015-06-14']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-15']['CAT 1'] + data_serie_2_normalized['2015-06-15']['CAT 1'] + data_serie_3_normalized['2015-06-15']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-16']['CAT 1'] + data_serie_2_normalized['2015-06-16']['CAT 1'] + data_serie_3_normalized['2015-06-16']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-17']['CAT 1'] + data_serie_2_normalized['2015-06-17']['CAT 1'] + data_serie_3_normalized['2015-06-17']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-18']['CAT 1'] + data_serie_2_normalized['2015-06-18']['CAT 1'] + data_serie_3_normalized['2015-06-18']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-19']['CAT 1'] + data_serie_2_normalized['2015-06-19']['CAT 1'] + data_serie_3_normalized['2015-06-19']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-20']['CAT 1'] + data_serie_2_normalized['2015-06-20']['CAT 1'] + data_serie_3_normalized['2015-06-20']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-21']['CAT 1'] + data_serie_2_normalized['2015-06-21']['CAT 1'] + data_serie_3_normalized['2015-06-21']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-22']['CAT 1'] + data_serie_2_normalized['2015-06-22']['CAT 1'] + data_serie_3_normalized['2015-06-22']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-23']['CAT 1'] + data_serie_2_normalized['2015-06-23']['CAT 1'] + data_serie_3_normalized['2015-06-23']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-24']['CAT 1'] + data_serie_2_normalized['2015-06-24']['CAT 1'] + data_serie_3_normalized['2015-06-24']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-25']['CAT 1'] + data_serie_2_normalized['2015-06-25']['CAT 1'] + data_serie_3_normalized['2015-06-25']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-26']['CAT 1'] + data_serie_2_normalized['2015-06-26']['CAT 1'] + data_serie_3_normalized['2015-06-26']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-27']['CAT 1'] + data_serie_2_normalized['2015-06-27']['CAT 1'] + data_serie_3_normalized['2015-06-27']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-28']['CAT 1'] + data_serie_2_normalized['2015-06-28']['CAT 1'] + data_serie_3_normalized['2015-06-28']['CAT 1'],
+                                    data_serie_1_normalized['2015-06-29']['CAT 1'] + data_serie_2_normalized['2015-06-29']['CAT 1'] + data_serie_3_normalized['2015-06-29']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-01']['CAT 1'] + data_serie_2_normalized['2015-07-01']['CAT 1'] + data_serie_3_normalized['2015-07-01']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-02']['CAT 1'] + data_serie_2_normalized['2015-07-02']['CAT 1'] + data_serie_3_normalized['2015-07-02']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-03']['CAT 1'] + data_serie_2_normalized['2015-07-03']['CAT 1'] + data_serie_3_normalized['2015-07-03']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-04']['CAT 1'] + data_serie_2_normalized['2015-07-04']['CAT 1'] + data_serie_3_normalized['2015-07-04']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-05']['CAT 1'] + data_serie_2_normalized['2015-07-05']['CAT 1'] + data_serie_3_normalized['2015-07-05']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-06']['CAT 1'] + data_serie_2_normalized['2015-07-06']['CAT 1'] + data_serie_3_normalized['2015-07-06']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-07']['CAT 1'] + data_serie_2_normalized['2015-07-07']['CAT 1'] + data_serie_3_normalized['2015-07-07']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-08']['CAT 1'] + data_serie_2_normalized['2015-07-08']['CAT 1'] + data_serie_3_normalized['2015-07-08']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-09']['CAT 1'] + data_serie_2_normalized['2015-07-09']['CAT 1'] + data_serie_3_normalized['2015-07-09']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-10']['CAT 1'] + data_serie_2_normalized['2015-07-10']['CAT 1'] + data_serie_3_normalized['2015-07-10']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-11']['CAT 1'] + data_serie_2_normalized['2015-07-11']['CAT 1'] + data_serie_3_normalized['2015-07-11']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-12']['CAT 1'] + data_serie_2_normalized['2015-07-12']['CAT 1'] + data_serie_3_normalized['2015-07-12']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-13']['CAT 1'] + data_serie_2_normalized['2015-07-13']['CAT 1'] + data_serie_3_normalized['2015-07-13']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-14']['CAT 1'] + data_serie_2_normalized['2015-07-14']['CAT 1'] + data_serie_3_normalized['2015-07-14']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-15']['CAT 1'] + data_serie_2_normalized['2015-07-15']['CAT 1'] + data_serie_3_normalized['2015-07-15']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-16']['CAT 1'] + data_serie_2_normalized['2015-07-16']['CAT 1'] + data_serie_3_normalized['2015-07-16']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-17']['CAT 1'] + data_serie_2_normalized['2015-07-17']['CAT 1'] + data_serie_3_normalized['2015-07-17']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-18']['CAT 1'] + data_serie_2_normalized['2015-07-18']['CAT 1'] + data_serie_3_normalized['2015-07-18']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-19']['CAT 1'] + data_serie_2_normalized['2015-07-19']['CAT 1'] + data_serie_3_normalized['2015-07-19']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-20']['CAT 1'] + data_serie_2_normalized['2015-07-20']['CAT 1'] + data_serie_3_normalized['2015-07-20']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-21']['CAT 1'] + data_serie_2_normalized['2015-07-21']['CAT 1'] + data_serie_3_normalized['2015-07-21']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-22']['CAT 1'] + data_serie_2_normalized['2015-07-22']['CAT 1'] + data_serie_3_normalized['2015-07-22']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-23']['CAT 1'] + data_serie_2_normalized['2015-07-23']['CAT 1'] + data_serie_3_normalized['2015-07-23']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-24']['CAT 1'] + data_serie_2_normalized['2015-07-24']['CAT 1'] + data_serie_3_normalized['2015-07-24']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-25']['CAT 1'] + data_serie_2_normalized['2015-07-25']['CAT 1'] + data_serie_3_normalized['2015-07-25']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-26']['CAT 1'] + data_serie_2_normalized['2015-07-26']['CAT 1'] + data_serie_3_normalized['2015-07-26']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-27']['CAT 1'] + data_serie_2_normalized['2015-07-27']['CAT 1'] + data_serie_3_normalized['2015-07-27']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-28']['CAT 1'] + data_serie_2_normalized['2015-07-28']['CAT 1'] + data_serie_3_normalized['2015-07-28']['CAT 1'],
+                                    data_serie_1_normalized['2015-07-29']['CAT 1'] + data_serie_2_normalized['2015-07-29']['CAT 1'] + data_serie_3_normalized['2015-07-29']['CAT 1']
+                            ]
+                        },
+                        {
+                            name: 'CAT 2',
+                            data: [data_serie_1_normalized['2015-06-01']['CAT 2'] + data_serie_2_normalized['2015-06-01']['CAT 2'] + data_serie_3_normalized['2015-06-01']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-02']['CAT 2'] + data_serie_2_normalized['2015-06-02']['CAT 2'] + data_serie_3_normalized['2015-06-02']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-03']['CAT 2'] + data_serie_2_normalized['2015-06-03']['CAT 2'] + data_serie_3_normalized['2015-06-03']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-04']['CAT 2'] + data_serie_2_normalized['2015-06-04']['CAT 2'] + data_serie_3_normalized['2015-06-04']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-05']['CAT 2'] + data_serie_2_normalized['2015-06-05']['CAT 2'] + data_serie_3_normalized['2015-06-05']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-06']['CAT 2'] + data_serie_2_normalized['2015-06-06']['CAT 2'] + data_serie_3_normalized['2015-06-06']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-07']['CAT 2'] + data_serie_2_normalized['2015-06-07']['CAT 2'] + data_serie_3_normalized['2015-06-07']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-08']['CAT 2'] + data_serie_2_normalized['2015-06-08']['CAT 2'] + data_serie_3_normalized['2015-06-08']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-09']['CAT 2'] + data_serie_2_normalized['2015-06-09']['CAT 2'] + data_serie_3_normalized['2015-06-09']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-10']['CAT 2'] + data_serie_2_normalized['2015-06-10']['CAT 2'] + data_serie_3_normalized['2015-06-10']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-11']['CAT 2'] + data_serie_2_normalized['2015-06-11']['CAT 2'] + data_serie_3_normalized['2015-06-11']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-12']['CAT 2'] + data_serie_2_normalized['2015-06-12']['CAT 2'] + data_serie_3_normalized['2015-06-12']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-13']['CAT 2'] + data_serie_2_normalized['2015-06-13']['CAT 2'] + data_serie_3_normalized['2015-06-13']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-14']['CAT 2'] + data_serie_2_normalized['2015-06-14']['CAT 2'] + data_serie_3_normalized['2015-06-14']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-15']['CAT 2'] + data_serie_2_normalized['2015-06-15']['CAT 2'] + data_serie_3_normalized['2015-06-15']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-16']['CAT 2'] + data_serie_2_normalized['2015-06-16']['CAT 2'] + data_serie_3_normalized['2015-06-16']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-17']['CAT 2'] + data_serie_2_normalized['2015-06-17']['CAT 2'] + data_serie_3_normalized['2015-06-17']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-18']['CAT 2'] + data_serie_2_normalized['2015-06-18']['CAT 2'] + data_serie_3_normalized['2015-06-18']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-19']['CAT 2'] + data_serie_2_normalized['2015-06-19']['CAT 2'] + data_serie_3_normalized['2015-06-19']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-20']['CAT 2'] + data_serie_2_normalized['2015-06-20']['CAT 2'] + data_serie_3_normalized['2015-06-20']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-21']['CAT 2'] + data_serie_2_normalized['2015-06-21']['CAT 2'] + data_serie_3_normalized['2015-06-21']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-22']['CAT 2'] + data_serie_2_normalized['2015-06-22']['CAT 2'] + data_serie_3_normalized['2015-06-22']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-23']['CAT 2'] + data_serie_2_normalized['2015-06-23']['CAT 2'] + data_serie_3_normalized['2015-06-23']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-24']['CAT 2'] + data_serie_2_normalized['2015-06-24']['CAT 2'] + data_serie_3_normalized['2015-06-24']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-25']['CAT 2'] + data_serie_2_normalized['2015-06-25']['CAT 2'] + data_serie_3_normalized['2015-06-25']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-26']['CAT 2'] + data_serie_2_normalized['2015-06-26']['CAT 2'] + data_serie_3_normalized['2015-06-26']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-27']['CAT 2'] + data_serie_2_normalized['2015-06-27']['CAT 2'] + data_serie_3_normalized['2015-06-27']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-28']['CAT 2'] + data_serie_2_normalized['2015-06-28']['CAT 2'] + data_serie_3_normalized['2015-06-28']['CAT 2'],
+                                    data_serie_1_normalized['2015-06-29']['CAT 2'] + data_serie_2_normalized['2015-06-29']['CAT 2'] + data_serie_3_normalized['2015-06-29']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-01']['CAT 2'] + data_serie_2_normalized['2015-07-01']['CAT 2'] + data_serie_3_normalized['2015-07-01']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-02']['CAT 2'] + data_serie_2_normalized['2015-07-02']['CAT 2'] + data_serie_3_normalized['2015-07-02']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-03']['CAT 2'] + data_serie_2_normalized['2015-07-03']['CAT 2'] + data_serie_3_normalized['2015-07-03']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-04']['CAT 2'] + data_serie_2_normalized['2015-07-04']['CAT 2'] + data_serie_3_normalized['2015-07-04']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-05']['CAT 2'] + data_serie_2_normalized['2015-07-05']['CAT 2'] + data_serie_3_normalized['2015-07-05']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-06']['CAT 2'] + data_serie_2_normalized['2015-07-06']['CAT 2'] + data_serie_3_normalized['2015-07-06']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-07']['CAT 2'] + data_serie_2_normalized['2015-07-07']['CAT 2'] + data_serie_3_normalized['2015-07-07']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-08']['CAT 2'] + data_serie_2_normalized['2015-07-08']['CAT 2'] + data_serie_3_normalized['2015-07-08']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-09']['CAT 2'] + data_serie_2_normalized['2015-07-09']['CAT 2'] + data_serie_3_normalized['2015-07-09']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-10']['CAT 2'] + data_serie_2_normalized['2015-07-10']['CAT 2'] + data_serie_3_normalized['2015-07-10']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-11']['CAT 2'] + data_serie_2_normalized['2015-07-11']['CAT 2'] + data_serie_3_normalized['2015-07-11']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-12']['CAT 2'] + data_serie_2_normalized['2015-07-12']['CAT 2'] + data_serie_3_normalized['2015-07-12']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-13']['CAT 2'] + data_serie_2_normalized['2015-07-13']['CAT 2'] + data_serie_3_normalized['2015-07-13']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-14']['CAT 2'] + data_serie_2_normalized['2015-07-14']['CAT 2'] + data_serie_3_normalized['2015-07-14']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-15']['CAT 2'] + data_serie_2_normalized['2015-07-15']['CAT 2'] + data_serie_3_normalized['2015-07-15']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-16']['CAT 2'] + data_serie_2_normalized['2015-07-16']['CAT 2'] + data_serie_3_normalized['2015-07-16']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-17']['CAT 2'] + data_serie_2_normalized['2015-07-17']['CAT 2'] + data_serie_3_normalized['2015-07-17']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-18']['CAT 2'] + data_serie_2_normalized['2015-07-18']['CAT 2'] + data_serie_3_normalized['2015-07-18']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-19']['CAT 2'] + data_serie_2_normalized['2015-07-19']['CAT 2'] + data_serie_3_normalized['2015-07-19']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-20']['CAT 2'] + data_serie_2_normalized['2015-07-20']['CAT 2'] + data_serie_3_normalized['2015-07-20']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-21']['CAT 2'] + data_serie_2_normalized['2015-07-21']['CAT 2'] + data_serie_3_normalized['2015-07-21']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-22']['CAT 2'] + data_serie_2_normalized['2015-07-22']['CAT 2'] + data_serie_3_normalized['2015-07-22']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-23']['CAT 2'] + data_serie_2_normalized['2015-07-23']['CAT 2'] + data_serie_3_normalized['2015-07-23']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-24']['CAT 2'] + data_serie_2_normalized['2015-07-24']['CAT 2'] + data_serie_3_normalized['2015-07-24']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-25']['CAT 2'] + data_serie_2_normalized['2015-07-25']['CAT 2'] + data_serie_3_normalized['2015-07-25']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-26']['CAT 2'] + data_serie_2_normalized['2015-07-26']['CAT 2'] + data_serie_3_normalized['2015-07-26']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-27']['CAT 2'] + data_serie_2_normalized['2015-07-27']['CAT 2'] + data_serie_3_normalized['2015-07-27']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-28']['CAT 2'] + data_serie_2_normalized['2015-07-28']['CAT 2'] + data_serie_3_normalized['2015-07-28']['CAT 2'],
+                                    data_serie_1_normalized['2015-07-29']['CAT 2'] + data_serie_2_normalized['2015-07-29']['CAT 2'] + data_serie_3_normalized['2015-07-29']['CAT 2']
+                            ]
+                        },
+                        {
+                            name: 'CAT 3',
+                            data: [data_serie_1_normalized['2015-06-01']['CAT 3'] + data_serie_2_normalized['2015-06-01']['CAT 3'] + data_serie_3_normalized['2015-06-01']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-02']['CAT 3'] + data_serie_2_normalized['2015-06-02']['CAT 3'] + data_serie_3_normalized['2015-06-02']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-03']['CAT 3'] + data_serie_2_normalized['2015-06-03']['CAT 3'] + data_serie_3_normalized['2015-06-03']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-04']['CAT 3'] + data_serie_2_normalized['2015-06-04']['CAT 3'] + data_serie_3_normalized['2015-06-04']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-05']['CAT 3'] + data_serie_2_normalized['2015-06-05']['CAT 3'] + data_serie_3_normalized['2015-06-05']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-06']['CAT 3'] + data_serie_2_normalized['2015-06-06']['CAT 3'] + data_serie_3_normalized['2015-06-06']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-07']['CAT 3'] + data_serie_2_normalized['2015-06-07']['CAT 3'] + data_serie_3_normalized['2015-06-07']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-08']['CAT 3'] + data_serie_2_normalized['2015-06-08']['CAT 3'] + data_serie_3_normalized['2015-06-08']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-09']['CAT 3'] + data_serie_2_normalized['2015-06-09']['CAT 3'] + data_serie_3_normalized['2015-06-09']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-10']['CAT 3'] + data_serie_2_normalized['2015-06-10']['CAT 3'] + data_serie_3_normalized['2015-06-10']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-11']['CAT 3'] + data_serie_2_normalized['2015-06-11']['CAT 3'] + data_serie_3_normalized['2015-06-11']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-12']['CAT 3'] + data_serie_2_normalized['2015-06-12']['CAT 3'] + data_serie_3_normalized['2015-06-12']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-13']['CAT 3'] + data_serie_2_normalized['2015-06-13']['CAT 3'] + data_serie_3_normalized['2015-06-13']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-14']['CAT 3'] + data_serie_2_normalized['2015-06-14']['CAT 3'] + data_serie_3_normalized['2015-06-14']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-15']['CAT 3'] + data_serie_2_normalized['2015-06-15']['CAT 3'] + data_serie_3_normalized['2015-06-15']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-16']['CAT 3'] + data_serie_2_normalized['2015-06-16']['CAT 3'] + data_serie_3_normalized['2015-06-16']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-17']['CAT 3'] + data_serie_2_normalized['2015-06-17']['CAT 3'] + data_serie_3_normalized['2015-06-17']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-18']['CAT 3'] + data_serie_2_normalized['2015-06-18']['CAT 3'] + data_serie_3_normalized['2015-06-18']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-19']['CAT 3'] + data_serie_2_normalized['2015-06-19']['CAT 3'] + data_serie_3_normalized['2015-06-19']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-20']['CAT 3'] + data_serie_2_normalized['2015-06-20']['CAT 3'] + data_serie_3_normalized['2015-06-20']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-21']['CAT 3'] + data_serie_2_normalized['2015-06-21']['CAT 3'] + data_serie_3_normalized['2015-06-21']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-22']['CAT 3'] + data_serie_2_normalized['2015-06-22']['CAT 3'] + data_serie_3_normalized['2015-06-22']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-23']['CAT 3'] + data_serie_2_normalized['2015-06-23']['CAT 3'] + data_serie_3_normalized['2015-06-23']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-24']['CAT 3'] + data_serie_2_normalized['2015-06-24']['CAT 3'] + data_serie_3_normalized['2015-06-24']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-25']['CAT 3'] + data_serie_2_normalized['2015-06-25']['CAT 3'] + data_serie_3_normalized['2015-06-25']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-26']['CAT 3'] + data_serie_2_normalized['2015-06-26']['CAT 3'] + data_serie_3_normalized['2015-06-26']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-27']['CAT 3'] + data_serie_2_normalized['2015-06-27']['CAT 3'] + data_serie_3_normalized['2015-06-27']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-28']['CAT 3'] + data_serie_2_normalized['2015-06-28']['CAT 3'] + data_serie_3_normalized['2015-06-28']['CAT 3'],
+                                    data_serie_1_normalized['2015-06-29']['CAT 3'] + data_serie_2_normalized['2015-06-29']['CAT 3'] + data_serie_3_normalized['2015-06-29']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-01']['CAT 3'] + data_serie_2_normalized['2015-07-01']['CAT 3'] + data_serie_3_normalized['2015-07-01']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-02']['CAT 3'] + data_serie_2_normalized['2015-07-02']['CAT 3'] + data_serie_3_normalized['2015-07-02']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-03']['CAT 3'] + data_serie_2_normalized['2015-07-03']['CAT 3'] + data_serie_3_normalized['2015-07-03']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-04']['CAT 3'] + data_serie_2_normalized['2015-07-04']['CAT 3'] + data_serie_3_normalized['2015-07-04']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-05']['CAT 3'] + data_serie_2_normalized['2015-07-05']['CAT 3'] + data_serie_3_normalized['2015-07-05']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-06']['CAT 3'] + data_serie_2_normalized['2015-07-06']['CAT 3'] + data_serie_3_normalized['2015-07-06']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-07']['CAT 3'] + data_serie_2_normalized['2015-07-07']['CAT 3'] + data_serie_3_normalized['2015-07-07']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-08']['CAT 3'] + data_serie_2_normalized['2015-07-08']['CAT 3'] + data_serie_3_normalized['2015-07-08']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-09']['CAT 3'] + data_serie_2_normalized['2015-07-09']['CAT 3'] + data_serie_3_normalized['2015-07-09']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-10']['CAT 3'] + data_serie_2_normalized['2015-07-10']['CAT 3'] + data_serie_3_normalized['2015-07-10']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-11']['CAT 3'] + data_serie_2_normalized['2015-07-11']['CAT 3'] + data_serie_3_normalized['2015-07-11']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-12']['CAT 3'] + data_serie_2_normalized['2015-07-12']['CAT 3'] + data_serie_3_normalized['2015-07-12']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-13']['CAT 3'] + data_serie_2_normalized['2015-07-13']['CAT 3'] + data_serie_3_normalized['2015-07-13']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-14']['CAT 3'] + data_serie_2_normalized['2015-07-14']['CAT 3'] + data_serie_3_normalized['2015-07-14']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-15']['CAT 3'] + data_serie_2_normalized['2015-07-15']['CAT 3'] + data_serie_3_normalized['2015-07-15']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-16']['CAT 3'] + data_serie_2_normalized['2015-07-16']['CAT 3'] + data_serie_3_normalized['2015-07-16']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-17']['CAT 3'] + data_serie_2_normalized['2015-07-17']['CAT 3'] + data_serie_3_normalized['2015-07-17']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-18']['CAT 3'] + data_serie_2_normalized['2015-07-18']['CAT 3'] + data_serie_3_normalized['2015-07-18']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-19']['CAT 3'] + data_serie_2_normalized['2015-07-19']['CAT 3'] + data_serie_3_normalized['2015-07-19']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-20']['CAT 3'] + data_serie_2_normalized['2015-07-20']['CAT 3'] + data_serie_3_normalized['2015-07-20']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-21']['CAT 3'] + data_serie_2_normalized['2015-07-21']['CAT 3'] + data_serie_3_normalized['2015-07-21']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-22']['CAT 3'] + data_serie_2_normalized['2015-07-22']['CAT 3'] + data_serie_3_normalized['2015-07-22']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-23']['CAT 3'] + data_serie_2_normalized['2015-07-23']['CAT 3'] + data_serie_3_normalized['2015-07-23']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-24']['CAT 3'] + data_serie_2_normalized['2015-07-24']['CAT 3'] + data_serie_3_normalized['2015-07-24']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-25']['CAT 3'] + data_serie_2_normalized['2015-07-25']['CAT 3'] + data_serie_3_normalized['2015-07-25']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-26']['CAT 3'] + data_serie_2_normalized['2015-07-26']['CAT 3'] + data_serie_3_normalized['2015-07-26']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-27']['CAT 3'] + data_serie_2_normalized['2015-07-27']['CAT 3'] + data_serie_3_normalized['2015-07-27']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-28']['CAT 3'] + data_serie_2_normalized['2015-07-28']['CAT 3'] + data_serie_3_normalized['2015-07-28']['CAT 3'],
+                                    data_serie_1_normalized['2015-07-29']['CAT 3'] + data_serie_2_normalized['2015-07-29']['CAT 3'] + data_serie_3_normalized['2015-07-29']['CAT 3']
+                            ]
+                        },
+                        {
+                            name: 'CAT 4',
+                            data: [data_serie_1_normalized['2015-06-01']['CAT 4'] + data_serie_2_normalized['2015-06-01']['CAT 4'] + data_serie_3_normalized['2015-06-01']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-02']['CAT 4'] + data_serie_2_normalized['2015-06-02']['CAT 4'] + data_serie_3_normalized['2015-06-02']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-03']['CAT 4'] + data_serie_2_normalized['2015-06-03']['CAT 4'] + data_serie_3_normalized['2015-06-03']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-04']['CAT 4'] + data_serie_2_normalized['2015-06-04']['CAT 4'] + data_serie_3_normalized['2015-06-04']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-05']['CAT 4'] + data_serie_2_normalized['2015-06-05']['CAT 4'] + data_serie_3_normalized['2015-06-05']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-06']['CAT 4'] + data_serie_2_normalized['2015-06-06']['CAT 4'] + data_serie_3_normalized['2015-06-06']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-07']['CAT 4'] + data_serie_2_normalized['2015-06-07']['CAT 4'] + data_serie_3_normalized['2015-06-07']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-08']['CAT 4'] + data_serie_2_normalized['2015-06-08']['CAT 4'] + data_serie_3_normalized['2015-06-08']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-09']['CAT 4'] + data_serie_2_normalized['2015-06-09']['CAT 4'] + data_serie_3_normalized['2015-06-09']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-10']['CAT 4'] + data_serie_2_normalized['2015-06-10']['CAT 4'] + data_serie_3_normalized['2015-06-10']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-11']['CAT 4'] + data_serie_2_normalized['2015-06-11']['CAT 4'] + data_serie_3_normalized['2015-06-11']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-12']['CAT 4'] + data_serie_2_normalized['2015-06-12']['CAT 4'] + data_serie_3_normalized['2015-06-12']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-13']['CAT 4'] + data_serie_2_normalized['2015-06-13']['CAT 4'] + data_serie_3_normalized['2015-06-13']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-14']['CAT 4'] + data_serie_2_normalized['2015-06-14']['CAT 4'] + data_serie_3_normalized['2015-06-14']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-15']['CAT 4'] + data_serie_2_normalized['2015-06-15']['CAT 4'] + data_serie_3_normalized['2015-06-15']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-16']['CAT 4'] + data_serie_2_normalized['2015-06-16']['CAT 4'] + data_serie_3_normalized['2015-06-16']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-17']['CAT 4'] + data_serie_2_normalized['2015-06-17']['CAT 4'] + data_serie_3_normalized['2015-06-17']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-18']['CAT 4'] + data_serie_2_normalized['2015-06-18']['CAT 4'] + data_serie_3_normalized['2015-06-18']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-19']['CAT 4'] + data_serie_2_normalized['2015-06-19']['CAT 4'] + data_serie_3_normalized['2015-06-19']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-20']['CAT 4'] + data_serie_2_normalized['2015-06-20']['CAT 4'] + data_serie_3_normalized['2015-06-20']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-21']['CAT 4'] + data_serie_2_normalized['2015-06-21']['CAT 4'] + data_serie_3_normalized['2015-06-21']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-22']['CAT 4'] + data_serie_2_normalized['2015-06-22']['CAT 4'] + data_serie_3_normalized['2015-06-22']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-23']['CAT 4'] + data_serie_2_normalized['2015-06-23']['CAT 4'] + data_serie_3_normalized['2015-06-23']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-24']['CAT 4'] + data_serie_2_normalized['2015-06-24']['CAT 4'] + data_serie_3_normalized['2015-06-24']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-25']['CAT 4'] + data_serie_2_normalized['2015-06-25']['CAT 4'] + data_serie_3_normalized['2015-06-25']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-26']['CAT 4'] + data_serie_2_normalized['2015-06-26']['CAT 4'] + data_serie_3_normalized['2015-06-26']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-27']['CAT 4'] + data_serie_2_normalized['2015-06-27']['CAT 4'] + data_serie_3_normalized['2015-06-27']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-28']['CAT 4'] + data_serie_2_normalized['2015-06-28']['CAT 4'] + data_serie_3_normalized['2015-06-28']['CAT 4'],
+                                    data_serie_1_normalized['2015-06-29']['CAT 4'] + data_serie_2_normalized['2015-06-29']['CAT 4'] + data_serie_3_normalized['2015-06-29']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-01']['CAT 4'] + data_serie_2_normalized['2015-07-01']['CAT 4'] + data_serie_3_normalized['2015-07-01']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-02']['CAT 4'] + data_serie_2_normalized['2015-07-02']['CAT 4'] + data_serie_3_normalized['2015-07-02']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-03']['CAT 4'] + data_serie_2_normalized['2015-07-03']['CAT 4'] + data_serie_3_normalized['2015-07-03']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-04']['CAT 4'] + data_serie_2_normalized['2015-07-04']['CAT 4'] + data_serie_3_normalized['2015-07-04']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-05']['CAT 4'] + data_serie_2_normalized['2015-07-05']['CAT 4'] + data_serie_3_normalized['2015-07-05']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-06']['CAT 4'] + data_serie_2_normalized['2015-07-06']['CAT 4'] + data_serie_3_normalized['2015-07-06']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-07']['CAT 4'] + data_serie_2_normalized['2015-07-07']['CAT 4'] + data_serie_3_normalized['2015-07-07']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-08']['CAT 4'] + data_serie_2_normalized['2015-07-08']['CAT 4'] + data_serie_3_normalized['2015-07-08']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-09']['CAT 4'] + data_serie_2_normalized['2015-07-09']['CAT 4'] + data_serie_3_normalized['2015-07-09']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-10']['CAT 4'] + data_serie_2_normalized['2015-07-10']['CAT 4'] + data_serie_3_normalized['2015-07-10']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-11']['CAT 4'] + data_serie_2_normalized['2015-07-11']['CAT 4'] + data_serie_3_normalized['2015-07-11']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-12']['CAT 4'] + data_serie_2_normalized['2015-07-12']['CAT 4'] + data_serie_3_normalized['2015-07-12']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-13']['CAT 4'] + data_serie_2_normalized['2015-07-13']['CAT 4'] + data_serie_3_normalized['2015-07-13']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-14']['CAT 4'] + data_serie_2_normalized['2015-07-14']['CAT 4'] + data_serie_3_normalized['2015-07-14']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-15']['CAT 4'] + data_serie_2_normalized['2015-07-15']['CAT 4'] + data_serie_3_normalized['2015-07-15']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-16']['CAT 4'] + data_serie_2_normalized['2015-07-16']['CAT 4'] + data_serie_3_normalized['2015-07-16']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-17']['CAT 4'] + data_serie_2_normalized['2015-07-17']['CAT 4'] + data_serie_3_normalized['2015-07-17']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-18']['CAT 4'] + data_serie_2_normalized['2015-07-18']['CAT 4'] + data_serie_3_normalized['2015-07-18']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-19']['CAT 4'] + data_serie_2_normalized['2015-07-19']['CAT 4'] + data_serie_3_normalized['2015-07-19']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-20']['CAT 4'] + data_serie_2_normalized['2015-07-20']['CAT 4'] + data_serie_3_normalized['2015-07-20']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-21']['CAT 4'] + data_serie_2_normalized['2015-07-21']['CAT 4'] + data_serie_3_normalized['2015-07-21']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-22']['CAT 4'] + data_serie_2_normalized['2015-07-22']['CAT 4'] + data_serie_3_normalized['2015-07-22']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-23']['CAT 4'] + data_serie_2_normalized['2015-07-23']['CAT 4'] + data_serie_3_normalized['2015-07-23']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-24']['CAT 4'] + data_serie_2_normalized['2015-07-24']['CAT 4'] + data_serie_3_normalized['2015-07-24']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-25']['CAT 4'] + data_serie_2_normalized['2015-07-25']['CAT 4'] + data_serie_3_normalized['2015-07-25']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-26']['CAT 4'] + data_serie_2_normalized['2015-07-26']['CAT 4'] + data_serie_3_normalized['2015-07-26']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-27']['CAT 4'] + data_serie_2_normalized['2015-07-27']['CAT 4'] + data_serie_3_normalized['2015-07-27']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-28']['CAT 4'] + data_serie_2_normalized['2015-07-28']['CAT 4'] + data_serie_3_normalized['2015-07-28']['CAT 4'],
+                                    data_serie_1_normalized['2015-07-29']['CAT 4'] + data_serie_2_normalized['2015-07-29']['CAT 4'] + data_serie_3_normalized['2015-07-29']['CAT 4']
+                            ]
+                        }
+                    ]
+            });
+        });
+        </script>
+    </head>
+    <body>
+        <div id="Graphic_1" style="width: 100%; height: 500px; margin: 0 auto"></div>
+    </body>
+</html>
