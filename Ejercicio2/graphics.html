@@ -36,12 +36,12 @@
         function normalizer_serie_data_1(serie, data) {
             if (!Array.isArray(serie[convert_date(data.d).toString()])) {
                 serie[convert_date(data.d).toString()] = [];
-                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] = data.value;
+                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] = Number(Math.round(data.value+'e2')+'e-2');
             }
             else if (serie[convert_date(data.d).toString()].indexOf(data.cat.toUpperCase()) == -1) {
-                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] = data.value;
+                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] = Number(Math.round(data.value+'e2')+'e-2');
             } else {
-                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] += data.value;
+                serie[convert_date(data.d).toString()][data.cat.toUpperCase()] += Number(Math.round(data.value+'e2')+'e-2');
             }
 
             if (cats.indexOf(data.cat.toUpperCase()) == -1) {
@@ -58,12 +58,12 @@
         function normalizer_serie_data_2(serie, data) {
             if (!Array.isArray(serie[data.myDate.toString()])) {
                 serie[data.myDate.toString()] = [];
-                serie[data.myDate.toString()][data.categ.toUpperCase()] = data.val;
+                serie[data.myDate.toString()][data.categ.toUpperCase()] = Number(Math.round(data.val+'e2')+'e-2');
             }
             else if (serie[data.myDate.toString()].indexOf(data.categ.toUpperCase()) == -1) {
-                serie[data.myDate.toString()][data.categ.toUpperCase()] = data.val;
+                serie[data.myDate.toString()][data.categ.toUpperCase()] = Number(Math.round(data.val+'e2')+'e-2');
             } else {
-                serie[data.myDate.toString()][data.categ.toUpperCase()] += data.val;
+                serie[data.myDate.toString()][data.categ.toUpperCase()] += Number(Math.round(data.val+'e2')+'e-2');
             }
 
             if (cats.indexOf(data.categ.toUpperCase()) == -1) {
@@ -91,12 +91,12 @@
             }
             if (!Array.isArray(serie[date])) {
                 serie[date] = [];
-                serie[date][cat] = data.val;
+                serie[date][cat] = Number(Math.round(data.val+'e2')+'e-2');
             }
             else if (serie[date].indexOf(cat) == -1) {
-                serie[date][cat] = data.val;
+                serie[date][cat] = Number(Math.round(data.val+'e2')+'e-2');
             } else {
-                serie[date][cat] += data.val;
+                serie[date][cat] += Number(Math.round(data.val+'e2')+'e-2');
             }
 
             if (cats.indexOf(cat) == -1) {
@@ -268,7 +268,7 @@
                 },
                 // Format tooltip to show on mouseover for graphic
                 tooltip: {
-                    enabled: false,
+                    enabled: true,
                     formatter: function() {
                         return '<b>'+ this.series.name +'</b><br/>'+
                             this.x +': '+ this.y +' '+this.series.name;
